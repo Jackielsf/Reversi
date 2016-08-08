@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+	<include layout="@layout/choose_difficulty"/>
+	
+
+	<Button
+        android:id="@+id/help"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="30dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/button_bg_red"
+        android:text="查看帮助"
+        android:textColor="@color/WHITE" 
+		android:onClick="getHelp"/>
+	
+	<Button
+        android:id="@+id/play"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_above="@id/help"
+        android:background="@drawable/button_bg_red"
+        android:text="开始游戏"
+        android:textColor="@color/WHITE" 
+        android:onClick="playGame"/> 
+  
+</RelativeLayout>

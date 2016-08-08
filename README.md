@@ -16,16 +16,8 @@
 
 5. 当双方均无处可落子时游戏结束，拥有棋子多者获胜。
 
-游戏截图
-==========
 
-![1](https://github.com/laserwave/Reversi/blob/master/images/1.png)
-![2](https://github.com/laserwave/Reversi/blob/master/images/2.png)
-![3](https://github.com/laserwave/Reversi/blob/master/images/3.png)
-
-
-
-Author
+原作者信息
 =========
 
  * ZhikaiZhang 
@@ -33,20 +25,9 @@ Author
  * Blog <http://zhikaizhang.cn>
  * [android黑白棋游戏实现](http://zhikaizhang.cn/2016/07/29/android%E9%BB%91%E7%99%BD%E6%A3%8B%E6%B8%B8%E6%88%8F%E5%AE%9E%E7%8E%B0/)
  
-License
-==========
 
-    Copyright 2016 ZhikaiZhang 
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
+提示
+=========
+version2.0:只是我学习的时候用，代码也基本上是之前的程序，我电脑上的android studio 不知怎么有问提，便将原作者的代码复制到了我的exlipse工程中。
+更改了开启应用的界面，直接就开始选择旗子，与难易程度开始游戏。之后尝试添加悔棋的功能。
