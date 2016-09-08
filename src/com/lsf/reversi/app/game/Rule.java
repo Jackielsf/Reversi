@@ -51,22 +51,22 @@ public class Rule {
 	public static List<Move> move(byte[][] chessBoard, Move move, byte chessColor) {
 		int row = move.row;
 		int col = move.col;
-		int i, j, temp, m, n, dirx, diry;
+		int dirx, diry;
 		List<Move> moves = new ArrayList<Move>();
-		for (dirx = -1; dirx < 2; dirx++) {
+		for (dirx = -1; dirx < 2; dirx++) {   		//落点棋子向８个方向遍历
 			for (diry = -1; diry < 2; diry++) {
-				if (dirx == 0 && diry == 0)
+				if (dirx == 0 && diry == 0){
 					continue;
-				temp = 0;
+				}
 				int x = col + dirx, y = row + diry;
 				if (isLegal(y, x) && chessBoard[y][x] == (-chessColor)) {
-					temp++;
-					for (i = row + diry * 2, j = col + dirx * 2; isLegal(i, j); i += diry, j += dirx) {
+					int temp = 1;
+					for (int i = row + diry * 2, j = col + dirx * 2; isLegal(i, j); i += diry, j += dirx) {
 						if (chessBoard[i][j] == (-chessColor)) {
 							temp++;
 							continue;
-						} else if (chessBoard[i][j] == chessColor) {
-							for (m = row + diry, n = col + dirx; m <= row + temp && m >= row - temp && n <= col + temp
+						} else if (chessBoard[i][j] == chessColor) {  //更改变色棋子
+							for (int m = row + diry, n = col + dirx; m <= row + temp && m >= row - temp && n <= col + temp
 									&& n >= col - temp; m += diry, n += dirx) {
 								chessBoard[m][n] = chessColor;
 								moves.add(new Move(m, n));

@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -25,8 +24,11 @@ import com.lsf.reversi.app.bean.Move;
 import com.lsf.reversi.app.bean.Statistic;
 import com.lsf.reversi.app.game.Algorithm;
 import com.lsf.reversi.app.game.Constant;
+import com.lsf.reversi.app.game.RenderThread;
 import com.lsf.reversi.app.game.ReversiView;
 import com.lsf.reversi.app.game.Rule;
+import com.lsf.reversi.app.util.HistoryUtil;
+import com.lsf.reversi.app.util.Util;
 import com.lsf.reversi.app.widget.MessageDialog;
 import com.lsf.reversi.app.widget.NewGameDialog;
 
@@ -50,6 +52,8 @@ public class GameActivity extends Activity {
 	private TextView nameOfAI;
 	private Button newGame;
 	private Button tip;
+	private Button regret;
+	private int regretNumber = 0;
 
 	private byte playerColor;
 	private byte aiColor;
@@ -73,8 +77,28 @@ public class GameActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.game);
+		initView();
 
+		Bundle bundle = getIntent().getExtras();
+		playerColor = bundle.getByte("playerColor");
+		aiColor = (byte) -playerColor;
+		difficulty = bundle.getInt("difficulty");
+		nameOfAI.setText(NAME_OF_AI[difficulty - 1]);
+		chessBoard = Util.initChessBoard();
+		if (playerColor == BLACK) {
+			playerImage.setImageResource(R.drawable.black1);
+			aiImage.setImageResource(R.drawable.white1);
+			playerTurn();
+		} else {
+			playerImage.setImageResource(R.drawable.white1);
+			aiImage.setImageResource(R.drawable.black1);
+			aiTurn();
+		}
+	}
+
+	private void initView() {
 		reversiView = (ReversiView) findViewById(R.id.reversiView);
+		reversiView.setOnTouchListener(new OnTouchListener());
 		playerLayout = (LinearLayout) findViewById(R.id.player);
 		aiLayout = (LinearLayout) findViewById(R.id.ai);
 		playerChesses = (TextView) findViewById(R.id.player_chesses);
@@ -85,6 +109,7 @@ public class GameActivity extends Activity {
 
 		newGame = (Button) findViewById(R.id.new_game);
 		tip = (Button) findViewById(R.id.tip);
+		regret = (Button) findViewById(R.id.regret);
 		newGame.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -102,79 +127,20 @@ public class GameActivity extends Activity {
 				new ThinkingThread(playerColor).start();
 			}
 		});
-
-		Bundle bundle = getIntent().getExtras();
-		playerColor = bundle.getByte("playerColor");
-		aiColor = (byte) -playerColor;
-		difficulty = bundle.getInt("difficulty");
-
-		nameOfAI.setText(NAME_OF_AI[difficulty - 1]);
-
-		initialChessboard();
-
-		reversiView.setOnTouchListener(new OnTouchListener() {
-
-			boolean down = false;
-			int downRow;
-			int downCol;
-
+		regret.setOnClickListener(new OnClickListener() {
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-
-				if (gameState != STATE_PLAYER_MOVE) {
-					return false;
+			public void onClick(View v) {
+				if(regretNumber == 3){
+					msgDialog = new MessageDialog(GameActivity.this, "只能后悔最多三次。");
+					msgDialog.show();
 				}
-				float x = event.getX();
-				float y = event.getY();
-				if (!reversiView.inChessBoard(x, y)) {
-					return false;
-				}
-				int row = reversiView.getRow(y);
-				int col = reversiView.getCol(x);
-				switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					down = true;
-					downRow = row;
-					downCol = col;
-					break;
-				case MotionEvent.ACTION_UP:
-
-					if (down && downRow == row && downCol == col) {
-						down = false;
-						if (!Rule.isLegalMove(chessBoard, new Move(row, col),
-								playerColor)) {
-							return true;
-						}
-
-						/**
-						 * 玩家走步
-						 */
-						Move move = new Move(row, col);
-						List<Move> moves = Rule.move(chessBoard, move,
-								playerColor);
-						reversiView.move(chessBoard, moves, move, playerColor);
-						aiTurn();
-
-					}
-					break;
-				case MotionEvent.ACTION_CANCEL:
-					down = false;
-					break;
-				}
-				return true;
+				chessBoard = HistoryUtil.regretUtil();
+				reversiView.regret(chessBoard);
+				regretNumber++;
+				reversiView.regretUI(chessBoard);
+				playerTurn();
 			}
 		});
-
-		if (playerColor == BLACK) {
-			playerImage.setImageResource(R.drawable.black1);
-			aiImage.setImageResource(R.drawable.white1);
-			playerTurn();
-		} else {
-			playerImage.setImageResource(R.drawable.white1);
-			aiImage.setImageResource(R.drawable.black1);
-			aiTurn();
-		}
-
 	}
 
 	private void initDialog(final NewGameDialog dialog) {
@@ -187,7 +153,7 @@ public class GameActivity extends Activity {
 
 				nameOfAI.setText(NAME_OF_AI[difficulty - 1]);
 
-				initialChessboard();
+				chessBoard = Util.initChessBoard();
 				if (playerColor == BLACK) {
 					playerImage.setImageResource(R.drawable.black1);
 					aiImage.setImageResource(R.drawable.white1);
@@ -202,17 +168,58 @@ public class GameActivity extends Activity {
 			}
 		});
 	}
+	
+	private class OnTouchListener implements android.view.View.OnTouchListener{
 
-	private void initialChessboard() {
-		for (int i = 0; i < M; i++) {
-			for (int j = 0; j < M; j++) {
-				chessBoard[i][j] = NULL;
+		boolean down = false;
+		int downRow;
+		int downCol;
+
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			if(regretNumber > 0){
+				regretNumber --;
 			}
+			if (gameState != STATE_PLAYER_MOVE) {
+				return false;
+			}
+			float x = event.getX();
+			float y = event.getY();
+			if (!reversiView.inChessBoard(x, y)) {
+				return false;
+			}
+			int row = reversiView.getRow(y);
+			int col = reversiView.getCol(x);
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				down = true;
+				downRow = row;
+				downCol = col;
+				break;
+			case MotionEvent.ACTION_UP:
+				if (down && downRow == row && downCol == col) {
+					down = false;
+					if (!Rule.isLegalMove(chessBoard, new Move(row, col),
+							playerColor)) {
+						return true;
+					}
+
+					/**
+					 * 玩家走步
+					 */
+					Move move = new Move(row, col);
+					HistoryUtil.updateUtil(chessBoard);
+					List<Move> moves = Rule.move(chessBoard, move, playerColor);
+					reversiView.move(chessBoard, moves, move, playerColor);
+					aiTurn();
+				}
+				break;
+			case MotionEvent.ACTION_CANCEL:
+				down = false;
+				break;
+			}
+			return true;
 		}
-		chessBoard[3][3] = WHITE;
-		chessBoard[3][4] = BLACK;
-		chessBoard[4][3] = BLACK;
-		chessBoard[4][4] = WHITE;
 	}
 
 	class ThinkingThread extends Thread {
@@ -286,7 +293,6 @@ public class GameActivity extends Activity {
 					playerTurn();
 				}
 			}
-
 		}
 
 		public void handle(long delayMillis, int legalMoves, int thinkingColor) {
@@ -329,12 +335,13 @@ public class GameActivity extends Activity {
 		msgDialog = new MessageDialog(GameActivity.this, msg);
 		msgDialog.show();
 	}
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			GameActivity.this.finish();
-			overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);
+			overridePendingTransition(android.R.anim.fade_in,
+					android.R.anim.fade_out);
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);

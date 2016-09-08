@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -19,6 +20,7 @@ import android.view.WindowManager;
 
 import com.lsf.reversi.R;
 import com.lsf.reversi.app.bean.Move;
+import com.lsf.reversi.app.util.HistoryUtil;
 import com.lsf.reversi.app.util.Util;
 
 /**
@@ -79,7 +81,6 @@ public class ReversiView extends SurfaceView implements Callback {
 		TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ReversiView);
 		ratio = typedArray.getFloat(R.styleable.ReversiView_ratio, 0.9f);
 
-
 		getHolder().addCallback(this);
 
 		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -109,19 +110,9 @@ public class ReversiView extends SurfaceView implements Callback {
 	}
 
 	public void initialChessBoard(){
-		chessBoard = new byte[M][M];
+		chessBoard = Util.initChessBoard();
+		
 		index = new int[M][M];
-
-		for (int i = 0; i < M; i++) {
-			for (int j = 0; j < M; j++) {
-				chessBoard[i][j] = NULL;
-			}
-		}
-		chessBoard[3][3] = WHITE;
-		chessBoard[3][4] = BLACK;
-		chessBoard[4][3] = BLACK;
-		chessBoard[4][4] = WHITE;
-
 		index[3][3] = 11;
 		index[3][4] = 0;
 		index[4][3] = 0;
@@ -142,7 +133,6 @@ public class ReversiView extends SurfaceView implements Callback {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-
 		widthMeasureSpec = View.MeasureSpec.makeMeasureSpec((int) bgLength, View.MeasureSpec.EXACTLY);
 		heightMeasureSpec = View.MeasureSpec.makeMeasureSpec((int) bgLength, View.MeasureSpec.EXACTLY);
 		setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
@@ -150,7 +140,6 @@ public class ReversiView extends SurfaceView implements Callback {
 	}
 
 	public void move(byte[][] chessBoard, List<Move> reversed, Move move, int chessColor) {
-
 		Util.copyBinaryArray(chessBoard, this.chessBoard);
 		for (int i = 0; i < reversed.size(); i++) {
 			int reverseRow = reversed.get(i).row;
@@ -167,11 +156,26 @@ public class ReversiView extends SurfaceView implements Callback {
 		} else if (chessBoard[row][col] == BLACK) {
 			index[row][col] = 0;
 		}
-
+	}
+	
+	public void regretUI(byte[][] chessBoard) {
+		Util.copyBinaryArray(chessBoard, this.chessBoard);
+	}
+	
+	public void regret(byte[][] chessBoard){
+		for(int row = 0; row < 8; row++)
+			for(int col = 0; col < 8; col++){
+				if (chessBoard[row][col] == WHITE) {
+					index[row][col] = 11;
+				} else if (chessBoard[row][col] == BLACK) {
+					index[row][col] = 0;
+				} else {
+					index[row][col] = -1;
+				}
+			}
 	}
 
 	public void update() {
-
 		for (int i = 0; i < M; i++) {
 			for (int j = 0; j < M; j++) {
 				if (chessBoard[i][j] == NULL)
@@ -179,7 +183,6 @@ public class ReversiView extends SurfaceView implements Callback {
 				index[i][j] = updateIndex(index[i][j], chessBoard[i][j]);
 			}
 		}
-
 	}
 
 	public boolean inChessBoard(float x, float y) {
@@ -257,9 +260,7 @@ public class ReversiView extends SurfaceView implements Callback {
 
 	}
 
-
 	public Bitmap loadBitmap(float width, float height, Drawable drawable) {
-
 		Bitmap bitmap = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(bitmap);
 		drawable.setBounds(0, 0, (int) width, (int) height);
