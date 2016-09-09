@@ -133,12 +133,13 @@ public class GameActivity extends Activity {
 				if(regretNumber == 3){
 					msgDialog = new MessageDialog(GameActivity.this, "只能后悔最多三次。");
 					msgDialog.show();
+				} else{
+					chessBoard = HistoryUtil.regretUtil();
+					reversiView.regret(chessBoard);
+					regretNumber++;
+					reversiView.regretUI(chessBoard);
+					playerTurn();
 				}
-				chessBoard = HistoryUtil.regretUtil();
-				reversiView.regret(chessBoard);
-				regretNumber++;
-				reversiView.regretUI(chessBoard);
-				playerTurn();
 			}
 		});
 	}
@@ -177,9 +178,6 @@ public class GameActivity extends Activity {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			if(regretNumber > 0){
-				regretNumber --;
-			}
 			if (gameState != STATE_PLAYER_MOVE) {
 				return false;
 			}
@@ -203,10 +201,9 @@ public class GameActivity extends Activity {
 							playerColor)) {
 						return true;
 					}
-
-					/**
-					 * 玩家走步
-					 */
+					if(regretNumber > 0){
+						regretNumber --;
+					}
 					Move move = new Move(row, col);
 					HistoryUtil.updateUtil(chessBoard);
 					List<Move> moves = Rule.move(chessBoard, move, playerColor);

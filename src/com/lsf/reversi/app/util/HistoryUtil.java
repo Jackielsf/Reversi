@@ -32,16 +32,14 @@ public class HistoryUtil {
 			Util.copyBinaryArray(chessBoard2, chessBoard1);
 			Util.copyBinaryArray(chessBoard3, chessBoard2);
 			setNull(chessBoard3);
-		} else {
-			if (!isNull(chessBoard2)) {
-				Util.copyBinaryArray(chessBoard1, temp);
-				Util.copyBinaryArray(chessBoard2, chessBoard1);
-				setNull(chessBoard2);
-			} else {
-				Util.copyBinaryArray(chessBoard1, temp);
-				setNull(chessBoard1);
-			}
-		}
+		} else if (!isNull(chessBoard2)){
+			Util.copyBinaryArray(chessBoard1, temp);
+			Util.copyBinaryArray(chessBoard2, chessBoard1);
+			setNull(chessBoard2);
+		} else if (!isNull(chessBoard1)){
+			Util.copyBinaryArray(chessBoard1, temp);
+			setNull(chessBoard1);
+		} 
 		Log.w("regret<<<", showArray(temp));
 		return temp;
 	}
@@ -57,7 +55,10 @@ public class HistoryUtil {
 	}
 
 	private static void setNull(byte[][] src) {
-		src = Util.initChessBoard();
+		for(int i=0;i<8;i++)
+			for(int j=0;j<8;j++){
+				src[i][j] = 0;
+			}
 	}
 
 	private static String showArray(byte[][] src) {

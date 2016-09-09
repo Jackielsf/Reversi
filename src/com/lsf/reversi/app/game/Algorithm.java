@@ -91,6 +91,13 @@ public class Algorithm {
 		return new MinimaxResult(best, move);
 	}
 
+	/**
+	 * 菜鸟级别只关注棋子个数，
+	 * 新手、入门、棋手3个级别不仅关注棋子的个数，而且关注特殊位置的棋子（边、角），
+	 * 棋士和大师级别在棋子个数、边角之外还考虑了行动力，
+	 * 即对方下轮可选的下子位置的个数，宗师和棋圣考虑稳定度和行动力。
+	 * @return
+	 */
 	private static int evaluate(byte[][] chessBoard, int difficulty) {
 		int whiteEvaluate = 0;
 		int blackEvaluate = 0;
